@@ -173,65 +173,13 @@ class SnakeGame: ObservableObject {
         food = freePositions.randomElement()
     }
 
-    //Appel api traduction
-    func translateToFrench(text: String, completion: @escaping (String) -> Void) {
-        guard let url = URL(string: "https://libretranslate.de/translate") else { return }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let body: [String: Any] = [
-            "q": text,
-            "source": "en",
-            "target": "fr",
-            "format": "text"
-        ]
-
-        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
-
-        URLSession.shared.dataTask(with: request) { data, _, error in
-            guard let data = data, error == nil else { return }
-
-            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let translated = json["translatedText"] as? String {
-                DispatchQueue.main.async {
-                    completion(translated)
-                }
-            }
-        }.resume()
-    }
-
-    //Appel API pour recupere des blagues chuck norris
-    func fetchFrenchRoast(completion: @escaping (String) -> Void) {
-        guard let url = URL(string: "https://evilinsult.com/generate_insult.php?lang=en&type=json") else { return }
-
-        URLSession.shared.dataTask(with: url) { data, _, error in
-            guard let data = data, error == nil else { return }
-
-            if let roast = try? JSONDecoder().decode(Roast.self, from: data) {
-                self.translateToFrench(text: roast.insult) { frenchInsult in
-                    completion(frenchInsult)
-                }
-            }
-        }.resume()
-    }
-
-    
     //Fonction de fin de jeu:
     func endGame(reason: String) {
-        // 1. On stoppe le timer directement
         stopTimer()
-        
-        // 2. On fetch la blague en français, puis on met à jour le gameOverMessage ET JokeMessage
-        fetchFrenchRoast { [weak self] frenchRoast in
-            DispatchQueue.main.async {
-                self?.isGameOver = true
-                self?.levelGate = false
-                self?.gameOverMessage = reason
-                self?.JokeMessage = frenchRoast
-            }
-        }
+
+        isGameOver = true
+        levelGate = false
+        gameOverMessage = reason
     }
 
 
@@ -247,8 +195,6 @@ class SnakeGame: ObservableObject {
         placeFood()
         isGameOver = false
         levelGate = false
-        gameOverMessage = ""
-        JokeMessage = ""
         
         startTimer()
     }
@@ -274,7 +220,7 @@ class SnakeGame: ObservableObject {
         
         //Verfication collision bord de la fenetre
         let gatePosition = Position(x: columns / 2, y: 0)
-        if newHead.x < 0 || newHead.x >= columns || newHead.y < 0 || newHead.y >= rows {
+        if newHead.x <= 0 || newHead.x+1 == columns || newHead.y < 0 || newHead.y >= rows {
             
             if levelGate && newHead == gatePosition{
                 level += 1

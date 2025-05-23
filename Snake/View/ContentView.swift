@@ -2,6 +2,8 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var game = SnakeGame()
+    @StateObject private var weatherVM = WeatherViewModel()
+
     @State private var isNight = false
     @State private var level = 1
     
@@ -17,7 +19,7 @@ struct ContentView: View {
         let height: CGFloat = 150
         
         VStack(spacing: 12) {
-            GameStatusView(score: $game.score, level: $level, isNight: $isNight)
+            GameStatusView(score: $game.score, level: $level, isNight: $isNight, weatherVM: weatherVM)
             ZStack {
                 // Fond gris clair (case vide)
                 //Color.gray.opacity(0.2)
@@ -103,6 +105,7 @@ struct ContentView: View {
             .background(Color.black)
             .onAppear {
                 game.restartGame()
+                weatherVM.fetchWeather(for: "Paris")
             }
             .overlay(
                 ZStack {
@@ -117,43 +120,6 @@ struct ContentView: View {
                                 .font(.system(size: 32, weight: .bold, design: .rounded))
                                 .foregroundColor(.white)
                                 .shadow(radius: 4)
-
-                            if !game.gameOverMessage.isEmpty {
-                                Text("💬 \(game.gameOverMessage)")
-                                    .font(.body)
-                                    .foregroundColor(.white)
-                                    .multilineTextAlignment(.center)
-                                    .padding()
-                                    .frame(maxWidth: 300)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .fill(Color.red.opacity(0.7))
-                                    )
-                                    .shadow(radius: 4)
-                            }
-
-                            if !game.JokeMessage.isEmpty {
-                                VStack(spacing: 10) {
-                                    Text(game.JokeMessage.isEmpty ? "Pas encore de blague" : game.JokeMessage)
-                                        .foregroundColor(.white)
-                                        .padding()
-
-
-                                    Text("\"\(game.JokeMessage)\"")
-                                        .font(.callout)
-                                        .italic()
-                                        .foregroundColor(.white)
-                                        .multilineTextAlignment(.center)
-                                        .padding()
-                                        .frame(maxWidth: 300)
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 12)
-                                                .fill(Color.blue.opacity(0.6))
-                                        )
-                                        .shadow(radius: 4)
-                                }
-                                .padding(.top, 10)
-                            }
 
                             Button("🔁 Rejouer") {
                                 game.restartGame()

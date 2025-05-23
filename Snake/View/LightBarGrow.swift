@@ -10,7 +10,7 @@ import SwiftUI
 
 struct LightBarGrow: View {
     var totalWidth: CGFloat
-    var height: CGFloat = 10
+    var height: CGFloat = 30
 
     @State private var currentWidth: CGFloat = 0
     @State private var animatePulse = false
