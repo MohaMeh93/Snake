@@ -79,6 +79,25 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7B19A0F42DE07E0D00FC1D71 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				7B896FD52DD7694F004B5B15 /* ContentView.swift */,
+				7B19A0EC2DE05B7300FC1D71 /* GameStatutView.swift */,
+				7B19A0EE2DE05DFD00FC1D71 /* HomeView.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		7B19A0F52DE07E3700FC1D71 /* Controller */ = {
+			isa = PBXGroup;
+			children = (
+				7B16D4D52DD7911600D54804 /* ChuckJoke.swift */,
+				7B16D4D32DD7804A00D54804 /* SnakeGameModelControl.swift */,
+			);
+			path = Controller;
+			sourceTree = "<group>";
+		};
 		7B896FC72DD7694F004B5B15 = {
 			isa = PBXGroup;
 			children = (
@@ -102,14 +121,11 @@
 		7B896FD22DD7694F004B5B15 /* Snake */ = {
 			isa = PBXGroup;
 			children = (
-				7B19A0EE2DE05DFD00FC1D71 /* HomeView.swift */,
-				7B19A0EC2DE05B7300FC1D71 /* GameStatutView.swift */,
+				7B19A0F52DE07E3700FC1D71 /* Controller */,
+				7B19A0F42DE07E0D00FC1D71 /* View */,
 				7B896FD32DD7694F004B5B15 /* SnakeApp.swift */,
-				7B896FD52DD7694F004B5B15 /* ContentView.swift */,
 				7B896FD72DD76951004B5B15 /* Assets.xcassets */,
 				7B896FD92DD76951004B5B15 /* Preview Content */,
-				7B16D4D32DD7804A00D54804 /* SnakeGameModelControl.swift */,
-				7B16D4D52DD7911600D54804 /* ChuckJoke.swift */,
 			);
 			path = Snake;
 			sourceTree = "<group>";

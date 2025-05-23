@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 //Structure pour les position sur la grille et dessiner le snake
-struct Position: Equatable{
+struct Position: Equatable, Hashable{
     let x: Int
     let y: Int
 }
@@ -18,6 +18,17 @@ struct Position: Equatable{
 enum Direction {
     case up, down, left, right
 }
+
+//Differente maps
+enum MapType {
+    case empty
+    case centralWall
+    case labyrinth
+    case randomWalls
+    case floatingIslands
+}
+
+
 
 class SnakeGame: ObservableObject {
     let rows = 20
@@ -29,22 +40,79 @@ class SnakeGame: ObservableObject {
         Position(x: 10, y: 12)
     ]
     
+    //Tableau position d'obstacle
+    @Published var obstacles: [Position] = []
+
     @Published var direction: Direction = .up
     @Published var isGameOver = false
     
     //Position de nourriture aleatoire
     @Published var food: Position? = nil
     //Blague au game over
-    @Published var gameOverMessage: String = ""
+    @Published var JokeMessage: String = ""
     
     //score
     @Published var score: Int = 0
+    
+    //Message raison de fin de jeu:
+    @Published var gameOverMessage = ""
+    
+    //Porte qui souvre vers l prochain niveau
+    @Published var levelGate: Bool = false
+    
+    //Niveau
+    @Published var level: Int = 1
 
     
     private var timer: AnyCancellable?
     
     init() {
         startTimer()
+    }
+    
+    //Generer les maps
+    func generateMap(of type: MapType) {
+        obstacles.removeAll()
+        
+        switch type {
+        case .empty:
+            break
+            
+        case .centralWall:
+            let midX = columns / 2
+            for y in 5..<(rows - 5) {
+                obstacles.append(Position(x: midX, y: y))
+            }
+
+        case .labyrinth:
+            for x in stride(from: 2, to: columns - 2, by: 4) {
+                for y in 1..<(rows - 1) {
+                    if y % 4 != 0 {
+                        obstacles.append(Position(x: x, y: y))
+                    }
+                }
+            }
+
+        case .randomWalls:
+            for _ in 0..<20 {
+                let randX = Int.random(in: 0..<columns)
+                let randY = Int.random(in: 0..<rows)
+                let pos = Position(x: randX, y: randY)
+                if !snake.contains(pos) && pos != food {
+                    obstacles.append(pos)
+                }
+            }
+
+        case .floatingIslands:
+            let islands = [
+                [Position(x: 3, y: 3), Position(x: 3, y: 4), Position(x: 4, y: 3)],
+                [Position(x: columns - 5, y: 3), Position(x: columns - 5, y: 4)],
+                [Position(x: columns / 2, y: rows - 4), Position(x: columns / 2 + 1, y: rows - 4)]
+            ]
+            for island in islands {
+                obstacles.append(contentsOf: island)
+            }
+        }
     }
     
     func startTimer() {
@@ -60,7 +128,7 @@ class SnakeGame: ObservableObject {
         timer?.cancel()
     }
     
-    
+    //Gestion des mouvement du Serpent
     func moveSnake(){
         var newHead = snake.first!
         
@@ -82,16 +150,51 @@ class SnakeGame: ObservableObject {
                 stopTimer()
                 return
         }
+        
+        //Collison avec un mur (obstacle)
+        if obstacles.contains(newHead) {
+            endGame(reason: "Tu as foncé dans un mur ! 🧱")
+            return
+        }
+        
+        //Le joueur entre dans la porte
+        if levelGate {
+            let centerTop = Position(x: columns / 2, y: 0)
+            if newHead == centerTop {
+                level += 1
+                score = 0
+                levelGate = false
+                
+                generateMap(of: .centralWall)
+                snake = [
+                    Position(x: columns / 2, y: rows / 2),
+                    Position(x: columns / 2, y: rows / 2 + 1),
+                    Position(x: columns / 2, y: rows / 2 + 2)
+                ]
+                placeFood()
+                
+                stopTimer()
+            }
+        }
+
+
         snake.insert(newHead, at: 0)
         
         if newHead == food {
             //une pomme vaut 10 points
             score += 10
+            openGate()
             // Snake a mangé la nourriture, on place une nouvelle pomme
             placeFood()
         } else {
             // Pas mangé, on enlève la queue
             snake.removeLast()
+        }
+    }
+    
+    func openGate(){
+        if score >= 30 && !levelGate {
+            levelGate = true
         }
     }
     
@@ -120,8 +223,8 @@ class SnakeGame: ObservableObject {
         if freePositions.isEmpty {
             // Pas de place libre, jeu gagné ou snake trop grand
             food = nil
-            isGameOver = true
             gameOverMessage = "Tu as rempli tout le terrain, bravo !"
+            endGame(reason: gameOverMessage)
             stopTimer()
             return
         }
@@ -140,10 +243,16 @@ class SnakeGame: ObservableObject {
 
             if let joke = try? JSONDecoder().decode(ChuckJoke.self, from: data) {
                 DispatchQueue.main.async {
-                    self.gameOverMessage = joke.value
+                    self.JokeMessage = joke.value
                 }
             }
         }.resume()
+    }
+    
+    //Fonction de fin de jeu:
+    func endGame(reason: String) {
+        isGameOver = true
+        gameOverMessage = reason
     }
 
     

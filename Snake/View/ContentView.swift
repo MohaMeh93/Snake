@@ -9,6 +9,13 @@ struct ContentView: View {
     let spacing: CGFloat = 2
     
     var body: some View {
+        
+        // Calculs des dimensions
+        let plateWidth = CGFloat(game.columns) * (squareSize + spacing)
+        let plateHeight = CGFloat(game.rows) * (squareSize + spacing)
+        let baseWidth: CGFloat = 100    // tu ajustes cette valeur selon l'effet souhaité
+        let height: CGFloat = 150
+        
         VStack(spacing: 12) {
             GameStatusView(score: $game.score, level: $level, isNight: $isNight)
             ZStack {
@@ -73,10 +80,24 @@ struct ContentView: View {
                             y: CGFloat(pos.y) * (squareSize + spacing) + squareSize / 2
                         )
                 }
+                
+                ForEach(game.obstacles, id: \.self) { pos in
+                    Rectangle()
+                        .fill(Color.gray)
+                        .frame(width: squareSize, height: squareSize)
+                        .position(
+                            x: CGFloat(pos.x) * (squareSize + spacing) + squareSize / 2,
+                            y: CGFloat(pos.y) * (squareSize + spacing) + squareSize / 2
+                        )
+                }
+                
+                //Porte qui s'ouvre vers le prochain niveau
+                
             }
+            
             .frame(
-                width: CGFloat(game.columns) * (squareSize + spacing),
-                height: CGFloat(game.rows) * (squareSize + spacing)
+                width: plateWidth,
+                height: plateHeight
             )
             .padding()
             .background(Color.black)
@@ -84,38 +105,71 @@ struct ContentView: View {
                 game.restartGame()
             }
             .overlay(
-                Group {
+                ZStack {
+                    if !game.isGameOver && game.score == 30{
+                    }
                     if game.isGameOver {
                         VStack(spacing: 20) {
-                            Text("Game Over")
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
+                            Text(game.gameOverMessage)
+                                .font(.system(size: 32, weight: .bold, design: .rounded))
                                 .foregroundColor(.white)
+                                .shadow(radius: 4)
+
                             if !game.gameOverMessage.isEmpty {
                                 Text("💬 \(game.gameOverMessage)")
                                     .font(.body)
                                     .foregroundColor(.white)
                                     .multilineTextAlignment(.center)
                                     .padding()
-                                    .background(Color.black.opacity(0.7))
-                                    .cornerRadius(10)
-                                    .padding(.horizontal)
+                                    .frame(maxWidth: 300)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(Color.red.opacity(0.7))
+                                    )
+                                    .shadow(radius: 4)
                             }
-                            Button("Rejouer") {
+
+                            if !game.JokeMessage.isEmpty {
+                                VStack(spacing: 10) {
+                                    Text("😄 Petite blague pour te consoler :")
+                                        .font(.subheadline)
+                                        .foregroundColor(.white)
+
+                                    Text("\"\(game.JokeMessage)\"")
+                                        .font(.callout)
+                                        .italic()
+                                        .foregroundColor(.white)
+                                        .multilineTextAlignment(.center)
+                                        .padding()
+                                        .frame(maxWidth: 300)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .fill(Color.blue.opacity(0.6))
+                                        )
+                                        .shadow(radius: 4)
+                                }
+                                .padding(.top, 10)
+                            }
+
+                            Button("🔁 Rejouer") {
                                 game.restartGame()
                             }
                             .font(.title2)
                             .foregroundColor(.white)
-                            .padding()
-                            .background(Color.blue)
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 10)
+                            .background(Color.green)
                             .cornerRadius(10)
+                            .shadow(radius: 4)
                         }
                         .padding()
-                        .background(Color.gray.opacity(0.9))
-                        .cornerRadius(15)
+                        .background(Color.black.opacity(0.85))
+                        .cornerRadius(20)
+                        .padding()
                     }
                 }
             )
+
             .gesture(
                 DragGesture(minimumDistance: 20)
                     .onEnded { value in
