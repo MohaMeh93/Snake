@@ -7,6 +7,6 @@
 
 import Foundation
 
-struct ChuckJoke: Decodable {
-    let value: String
+struct Roast: Decodable {
+    let insult: String
 }

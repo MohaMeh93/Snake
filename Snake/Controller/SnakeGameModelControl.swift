@@ -128,6 +128,134 @@ class SnakeGame: ObservableObject {
         timer?.cancel()
     }
     
+    
+    func changeDirection(_ newDirection: Direction) {
+        // Empêche le snake de faire demi-tour
+        switch (direction, newDirection) {
+        case (.up, .down), (.down, .up), (.left, .right), (.right, .left):
+            return
+        default:
+            direction = newDirection
+        }
+    }
+    
+    func placeFood() {
+        // ✅ NE RIEN FAIRE si on est en mode "porte activée"
+        if levelGate == true {
+            food = nil
+            return
+        }
+        
+        // Créer la liste des positions libres
+        var freePositions = [Position]()
+        for x in 0..<columns {
+            for y in 0..<rows {
+                let pos = Position(x: x, y: y)
+                
+                // Vérifie que la position n'est pas occupée par le serpent
+                // (ajoute ici d'autres vérifs si tu veux exclure la porte)
+                if !snake.contains(pos) {
+                    freePositions.append(pos)
+                }
+            }
+        }
+        
+        if freePositions.isEmpty {
+            // Pas de place libre, jeu gagné
+            food = nil
+            gameOverMessage = "Tu as rempli tout le terrain, bravo !"
+            endGame(reason: gameOverMessage)
+            stopTimer()
+            return
+        }
+
+        // Choisir une position libre aléatoire
+        food = freePositions.randomElement()
+    }
+
+    //Appel api traduction
+    func translateToFrench(text: String, completion: @escaping (String) -> Void) {
+        guard let url = URL(string: "https://libretranslate.de/translate") else { return }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = [
+            "q": text,
+            "source": "en",
+            "target": "fr",
+            "format": "text"
+        ]
+
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            guard let data = data, error == nil else { return }
+
+            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let translated = json["translatedText"] as? String {
+                DispatchQueue.main.async {
+                    completion(translated)
+                }
+            }
+        }.resume()
+    }
+
+    //Appel API pour recupere des blagues chuck norris
+    func fetchFrenchRoast(completion: @escaping (String) -> Void) {
+        guard let url = URL(string: "https://evilinsult.com/generate_insult.php?lang=en&type=json") else { return }
+
+        URLSession.shared.dataTask(with: url) { data, _, error in
+            guard let data = data, error == nil else { return }
+
+            if let roast = try? JSONDecoder().decode(Roast.self, from: data) {
+                self.translateToFrench(text: roast.insult) { frenchInsult in
+                    completion(frenchInsult)
+                }
+            }
+        }.resume()
+    }
+
+    
+    //Fonction de fin de jeu:
+    func endGame(reason: String) {
+        // 1. On stoppe le timer directement
+        stopTimer()
+        
+        // 2. On fetch la blague en français, puis on met à jour le gameOverMessage ET JokeMessage
+        fetchFrenchRoast { [weak self] frenchRoast in
+            DispatchQueue.main.async {
+                self?.isGameOver = true
+                self?.levelGate = false
+                self?.gameOverMessage = reason
+                self?.JokeMessage = frenchRoast
+            }
+        }
+    }
+
+
+    
+    func restartGame() {
+        snake = [
+            Position(x: 10, y: 10),
+            Position(x: 10, y: 11),
+            Position(x: 10, y: 12)
+        ]
+        score = 0
+        direction = .up
+        placeFood()
+        isGameOver = false
+        levelGate = false
+        gameOverMessage = ""
+        JokeMessage = ""
+        
+        startTimer()
+    }
+    
+    
+    //Logique de jeu :
+    
     //Gestion des mouvement du Serpent
     func moveSnake(){
         var newHead = snake.first!
@@ -142,14 +270,29 @@ class SnakeGame: ObservableObject {
         case .right:
             newHead = Position(x: newHead.x + 1, y: newHead.y)
         }
+        
+        
         //Verfication collision bord de la fenetre
+        let gatePosition = Position(x: columns / 2, y: 0)
         if newHead.x < 0 || newHead.x >= columns || newHead.y < 0 || newHead.y >= rows {
+            
+            if levelGate && newHead == gatePosition{
+                level += 1
+                score = 0
+                levelGate = false
+                
+                generateMap(of: .centralWall)
+                restartGame()
+            }else{
                 //arreter le jeu
                 isGameOver = true
-                fetchChuckJoke()
+                endGame(reason: "Tu as perdu !")
                 stopTimer()
                 return
+            }
+            
         }
+        
         
         //Collison avec un mur (obstacle)
         if obstacles.contains(newHead) {
@@ -157,116 +300,22 @@ class SnakeGame: ObservableObject {
             return
         }
         
-        //Le joueur entre dans la porte
-        if levelGate {
-            let centerTop = Position(x: columns / 2, y: 0)
-            if newHead == centerTop {
-                level += 1
-                score = 0
-                levelGate = false
-                
-                generateMap(of: .centralWall)
-                snake = [
-                    Position(x: columns / 2, y: rows / 2),
-                    Position(x: columns / 2, y: rows / 2 + 1),
-                    Position(x: columns / 2, y: rows / 2 + 2)
-                ]
-                placeFood()
-                
-                stopTimer()
-            }
-        }
-
-
         snake.insert(newHead, at: 0)
         
         if newHead == food {
-            //une pomme vaut 10 points
             score += 10
-            openGate()
-            // Snake a mangé la nourriture, on place une nouvelle pomme
-            placeFood()
+
+            // Active la porte une fois qu'on a atteint 30
+            if score == 30 {
+                levelGate = true
+                food = nil
+            }else{
+                placeFood()
+            }
         } else {
             // Pas mangé, on enlève la queue
             snake.removeLast()
         }
-    }
-    
-    func openGate(){
-        if score >= 30 && !levelGate {
-            levelGate = true
-        }
-    }
-    
-    func changeDirection(_ newDirection: Direction) {
-        // Empêche le snake de faire demi-tour
-        switch (direction, newDirection) {
-        case (.up, .down), (.down, .up), (.left, .right), (.right, .left):
-            return
-        default:
-            direction = newDirection
-        }
-    }
-    
-    func placeFood() {
-        // Créer la liste des positions libres
-        var freePositions = [Position]()
-        for x in 0..<columns {
-            for y in 0..<rows {
-                let pos = Position(x: x, y: y)
-                if !snake.contains(pos) {
-                    freePositions.append(pos)
-                }
-            }
-        }
-        
-        if freePositions.isEmpty {
-            // Pas de place libre, jeu gagné ou snake trop grand
-            food = nil
-            gameOverMessage = "Tu as rempli tout le terrain, bravo !"
-            endGame(reason: gameOverMessage)
-            stopTimer()
-            return
-        }
-        
-        // Choisir une position libre aléatoirement
-        food = freePositions.randomElement()
-    }
-
-    
-    //Appel API pour recupere des blagues chuck norris
-    func fetchChuckJoke() {
-        guard let url = URL(string: "https://api.chucknorris.io/jokes/random") else { return }
-
-        URLSession.shared.dataTask(with: url) { data, _, error in
-            guard let data = data, error == nil else { return }
-
-            if let joke = try? JSONDecoder().decode(ChuckJoke.self, from: data) {
-                DispatchQueue.main.async {
-                    self.JokeMessage = joke.value
-                }
-            }
-        }.resume()
-    }
-    
-    //Fonction de fin de jeu:
-    func endGame(reason: String) {
-        isGameOver = true
-        gameOverMessage = reason
-    }
-
-    
-    func restartGame() {
-        snake = [
-            Position(x: 10, y: 10),
-            Position(x: 10, y: 11),
-            Position(x: 10, y: 12)
-        ]
-        score = 0
-        direction = .up
-        placeFood()
-        isGameOver = false
-        startTimer()
     }
     
 }

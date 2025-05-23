@@ -18,6 +18,8 @@
 		7B896FE52DD76951004B5B15 /* SnakeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B896FE42DD76951004B5B15 /* SnakeTests.swift */; };
 		7B896FEF2DD76951004B5B15 /* SnakeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B896FEE2DD76951004B5B15 /* SnakeUITests.swift */; };
 		7B896FF12DD76951004B5B15 /* SnakeUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B896FF02DD76951004B5B15 /* SnakeUITestsLaunchTests.swift */; };
+		7BAE9D882DE0A0390024C4D7 /* LightBarGrow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BAE9D872DE0A0390024C4D7 /* LightBarGrow.swift */; };
+		7BAE9D8A2DE0A1970024C4D7 /* ParticuleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BAE9D892DE0A1970024C4D7 /* ParticuleView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,6 +54,8 @@
 		7B896FEA2DD76951004B5B15 /* SnakeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SnakeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B896FEE2DD76951004B5B15 /* SnakeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnakeUITests.swift; sourceTree = "<group>"; };
 		7B896FF02DD76951004B5B15 /* SnakeUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnakeUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		7BAE9D872DE0A0390024C4D7 /* LightBarGrow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightBarGrow.swift; sourceTree = "<group>"; };
+		7BAE9D892DE0A1970024C4D7 /* ParticuleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticuleView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,6 +89,8 @@
 				7B896FD52DD7694F004B5B15 /* ContentView.swift */,
 				7B19A0EC2DE05B7300FC1D71 /* GameStatutView.swift */,
 				7B19A0EE2DE05DFD00FC1D71 /* HomeView.swift */,
+				7BAE9D872DE0A0390024C4D7 /* LightBarGrow.swift */,
+				7BAE9D892DE0A1970024C4D7 /* ParticuleView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -92,7 +98,6 @@
 		7B19A0F52DE07E3700FC1D71 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
-				7B16D4D52DD7911600D54804 /* ChuckJoke.swift */,
 				7B16D4D32DD7804A00D54804 /* SnakeGameModelControl.swift */,
 			);
 			path = Controller;
@@ -121,6 +126,7 @@
 		7B896FD22DD7694F004B5B15 /* Snake */ = {
 			isa = PBXGroup;
 			children = (
+				7BAE9D8B2DE0A9360024C4D7 /* Model */,
 				7B19A0F52DE07E3700FC1D71 /* Controller */,
 				7B19A0F42DE07E0D00FC1D71 /* View */,
 				7B896FD32DD7694F004B5B15 /* SnakeApp.swift */,
@@ -153,6 +159,14 @@
 				7B896FF02DD76951004B5B15 /* SnakeUITestsLaunchTests.swift */,
 			);
 			path = SnakeUITests;
+			sourceTree = "<group>";
+		};
+		7BAE9D8B2DE0A9360024C4D7 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				7B16D4D52DD7911600D54804 /* ChuckJoke.swift */,
+			);
+			path = Model;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -287,8 +301,10 @@
 			files = (
 				7B896FD62DD7694F004B5B15 /* ContentView.swift in Sources */,
 				7B16D4D62DD7911600D54804 /* ChuckJoke.swift in Sources */,
+				7BAE9D8A2DE0A1970024C4D7 /* ParticuleView.swift in Sources */,
 				7B16D4D42DD7804A00D54804 /* SnakeGameModelControl.swift in Sources */,
 				7B19A0EF2DE05DFD00FC1D71 /* HomeView.swift in Sources */,
+				7BAE9D882DE0A0390024C4D7 /* LightBarGrow.swift in Sources */,
 				7B19A0ED2DE05B7300FC1D71 /* GameStatutView.swift in Sources */,
 				7B896FD42DD7694F004B5B15 /* SnakeApp.swift in Sources */,
 			);

@@ -107,6 +107,9 @@ struct ContentView: View {
             .overlay(
                 ZStack {
                     if !game.isGameOver && game.score == 30{
+                        // 🔥 Barre lumineuse au sommet du plateau
+                        LightBarGrow(totalWidth: plateWidth - spacing)
+                            .position(x: plateWidth / 2, y: 5)
                     }
                     if game.isGameOver {
                         VStack(spacing: 20) {
@@ -131,9 +134,10 @@ struct ContentView: View {
 
                             if !game.JokeMessage.isEmpty {
                                 VStack(spacing: 10) {
-                                    Text("😄 Petite blague pour te consoler :")
-                                        .font(.subheadline)
+                                    Text(game.JokeMessage.isEmpty ? "Pas encore de blague" : game.JokeMessage)
                                         .foregroundColor(.white)
+                                        .padding()
+
 
                                     Text("\"\(game.JokeMessage)\"")
                                         .font(.callout)
