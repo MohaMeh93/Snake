@@ -33,10 +33,12 @@ class SnakeGame: ObservableObject {
     @Published var isGameOver = false
     
     //Position de nourriture aleatoire
-    @Published var food: Position = Position(x: Int.random(in: 0..<20), y: Int.random(in: 0..<20))
-    
+    @Published var food: Position? = nil
     //Blague au game over
     @Published var gameOverMessage: String = ""
+    
+    //score
+    @Published var score: Int = 0
 
     
     private var timer: AnyCancellable?
@@ -83,6 +85,8 @@ class SnakeGame: ObservableObject {
         snake.insert(newHead, at: 0)
         
         if newHead == food {
+            //une pomme vaut 10 points
+            score += 10
             // Snake a mangé la nourriture, on place une nouvelle pomme
             placeFood()
         } else {
@@ -102,12 +106,30 @@ class SnakeGame: ObservableObject {
     }
     
     func placeFood() {
-        var newFood: Position
-        repeat {
-            newFood = Position(x: Int.random(in: 0..<columns), y: Int.random(in: 0..<rows))
-        } while snake.contains(newFood)
-        food = newFood
+        // Créer la liste des positions libres
+        var freePositions = [Position]()
+        for x in 0..<columns {
+            for y in 0..<rows {
+                let pos = Position(x: x, y: y)
+                if !snake.contains(pos) {
+                    freePositions.append(pos)
+                }
+            }
+        }
+        
+        if freePositions.isEmpty {
+            // Pas de place libre, jeu gagné ou snake trop grand
+            food = nil
+            isGameOver = true
+            gameOverMessage = "Tu as rempli tout le terrain, bravo !"
+            stopTimer()
+            return
+        }
+        
+        // Choisir une position libre aléatoirement
+        food = freePositions.randomElement()
     }
+
     
     //Appel API pour recupere des blagues chuck norris
     func fetchChuckJoke() {
@@ -131,6 +153,7 @@ class SnakeGame: ObservableObject {
             Position(x: 10, y: 11),
             Position(x: 10, y: 12)
         ]
+        score = 0
         direction = .up
         placeFood()
         isGameOver = false
